@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Smoke</title>
+	<style>
+		canvas {
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			background-color: black;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+	<script>
+		// Set up the canvas and context
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+		// Set up the smoke variables
+		var smokeParticles = [];
+		var maxParticles = 100;
+		var particleSize = 10;
+		var particleLifetime = 10;
+		var particleSpeed = 5;
+
+		// Create the Particle class
+		class Particle {
+			constructor(x, y) {
+				this.x = x;
+				this.y = y;
+				this.size = particleSize;
+				this.color = `rgb(${Math.floor(Math.random() * 56)}, ${Math.floor(Math.random() * 56)}, ${Math.floor(Math.random() * 56)})`;
+				this.lifetime = particleLifetime;
+				this.speed = particleSpeed;
+				this.angle = Math.random() * 2 * Math.PI;
+				this.xVel = this.speed * Math.cos(this.angle);
+				this.yVel = this.speed * Math.sin(this.angle);
+			}
+
+			update() {
+				this.x += this.xVel;
+				this.y += this.yVel;
+				this.lifetime--;
+			}
+
+			draw() {
+				ctx.beginPath();
+				ctx.fillStyle = this.color;
+				ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+				ctx.fill();
+			}
+		}
+
+		// Handle mouse movement
+		document.addEventListener('mousemove', event => {
+			var x = event.clientX;
+			var y = event.clientY;
+			for (var i = 0; i < maxParticles; i++) {
+				smokeParticles.push(new Particle(x, y));
+			}
+		});
+
+		// Update and draw the smoke particles
+		function update() {
+			for (var i = smokeParticles.length - 1; i >= 0; i--) {
+				var particle = smokeParticles[i];
+				particle.update();
+				if (particle.lifetime <= 0) {
+					smokeParticles.splice(i, 1);
+				}
+			}
+		}
+
+		function draw() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			smokeParticles.forEach(particle => {
+				particle.draw();
+			});
+		}
+
+		// Set up the game loop
+		var lastTime = 0;
+		function gameLoop(time) {
+			var deltaTime = time - lastTime;
+			lastTime = time;
+			update(deltaTime);
+			draw();
+			requestAnimationFrame(gameLoop);
+		}
+		requestAnimationFrame(gameLoop);
+	</script>
+</body>
+</html>
